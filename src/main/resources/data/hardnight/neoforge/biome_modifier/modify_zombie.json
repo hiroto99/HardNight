@@ -1,0 +1,24 @@
+{
+    "type": "windowslib:modify_spawns",
+    "biomes": [
+        "minecraft:snowy_taiga",
+        "minecraft:snowy_plains",
+        "minecraft:snowy_slopes",
+        "minecraft:ice_spikes",
+        "minecraft:frozen_river"
+    ],
+    "spawners": [
+        {
+            "type": "minecraft:zombie",
+            "weight": 19,
+            "minCount": 4,
+            "maxCount": 4
+        },
+        {
+            "type": "minecraft:zombie_villager",
+            "weight": 1,
+            "minCount": 4,
+            "maxCount": 4
+        }
+    ]
+}

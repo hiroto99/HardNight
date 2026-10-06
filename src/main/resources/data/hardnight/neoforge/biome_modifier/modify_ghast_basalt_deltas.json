@@ -1,0 +1,14 @@
+{
+  "type": "windowslib:modify_spawns",
+  "biomes": [
+    "minecraft:basalt_deltas"
+  ],
+  "spawners": [
+    {
+      "type": "minecraft:ghast",
+      "weight": 36,
+      "minCount": 4,
+      "maxCount": 4
+    }
+  ]
+}

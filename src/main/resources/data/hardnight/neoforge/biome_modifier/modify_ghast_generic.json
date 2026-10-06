@@ -1,0 +1,15 @@
+{
+  "type": "windowslib:modify_spawns",
+  "biomes": [
+    "minecraft:nether_wastes",
+    "minecraft:soul_sand_valley"
+  ],
+  "spawners": [
+    {
+      "type": "minecraft:ghast",
+      "weight": 45,
+      "minCount": 4,
+      "maxCount": 4
+    }
+  ]
+}
