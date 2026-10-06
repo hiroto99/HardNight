@@ -33,7 +33,6 @@ bin/
 .DS_Store
 
 ### Minecraft Modding ###
-libs/
 run/
 !**/src/**/run/
 **/src/generated/**/.cache/
