@@ -3,8 +3,11 @@ package com.hiroto99.hardnight.modify;
 import com.hiroto99.hardnight.ai.HitAndAwayGoal;
 import com.hiroto99.windowslib.ref.EntityRef;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -23,10 +26,10 @@ import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
-import static com.hiroto99.hardnight.HardNight.LOGGER;
 import static com.hiroto99.hardnight.ModTags.LIVE_STOCKS;
 
 public class LivestockModify {
@@ -100,10 +103,12 @@ public class LivestockModify {
             }
 
             // 3. ウシ・ムーシュルームのノックバック属性値を直接設定
-            if (mob.getAttributes().hasAttribute(Attributes.ATTACK_KNOCKBACK)) {
-                var knockbackAttr = mob.getAttribute(Attributes.ATTACK_KNOCKBACK);
-                if (knockbackAttr != null) {
-                    knockbackAttr.setBaseValue(1.0D);
+            if (mob.is(EntityType.COW) || mob.is(EntityType.MOOSHROOM)) {
+                if (mob.getAttributes().hasAttribute(Attributes.ATTACK_KNOCKBACK)) {
+                    var knockbackAttr = mob.getAttribute(Attributes.ATTACK_KNOCKBACK);
+                    if (knockbackAttr != null) {
+                        knockbackAttr.setBaseValue(1.0D);
+                    }
                 }
             }
 
@@ -202,25 +207,84 @@ public class LivestockModify {
             return;
         }
 
-        // 1. ターゲットおよびダメージ履歴の設定
+        // すでに同じターゲットを追っている場合は演出を連続再生しないガード（任意）
+        boolean isNewTarget = mob.getTarget() != attacker;
+
+        // 1. ターゲットの設定
         mob.setTarget(attacker);
         mob.setLastHurtByMob(attacker);
-        if (attacker instanceof net.minecraft.world.entity.player.Player player) {
-            mob.setLastHurtByPlayer(player, 100);
+
+        // 2. 新しく敵対した瞬間に演出を実行
+        if (isNewTarget && mob.level() instanceof ServerLevel serverLevel) {
+            playAngerEffects(mob, serverLevel);
         }
 
-        // 2. パニック行動を停止させ、攻撃AIを即座に起動する
+        // 3. 移動ナビゲーションの強制上書き
         if (mob instanceof PathfinderMob pathfinderMob) {
-            pathfinderMob.getNavigation().stop();
+            pathfinderMob.getNavigation().stop(); // 現在の移動（逃走や徘徊）をキャンセル
             pathfinderMob.getNavigation().moveTo(attacker, getSpeedModifier(pathfinderMob));
 
-            // 追加された攻撃Goal（MeleeAttackGoal等）を探して直接起動する
+            // 4. 攻撃Goal（MeleeAttackGoal等）を即座に手動起動する
             for (WrappedGoal wrappedGoal : mob.goalSelector.getAvailableGoals()) {
                 if (wrappedGoal.getGoal() instanceof MeleeAttackGoal || wrappedGoal.getGoal() instanceof HitAndAwayGoal) {
                     if (wrappedGoal.canUse()) {
-                        wrappedGoal.start();
+                        wrappedGoal.start(); // AIの条件チェックを待たずに即時実行
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 怒り状態のパーティクルと鳴き声を再生するヘルパーメソッド
+     */
+    private static void playAngerEffects(Mob mob, ServerLevel level) {
+        // --- 1. パーティクル表示（angryVillager）---
+        // モブの頭上（height + 0.5m）付近に数個の怒りマークを散らす
+        double x = mob.getX();
+        double y = mob.getY() + mob.getBbHeight() + 0.5; // モブの頭上
+        double z = mob.getZ();
+
+        // particles: タイプ, X, Y, Z, 個数, X広がり, Y広がり, Z広がり, スピード
+        level.sendParticles(
+                ParticleTypes.ANGRY_VILLAGER,
+                x, y, z,
+                5,                  // パーティクルの個数
+                0.3, 0.2, 0.3,      // 発生範囲のブレ（幅）
+                0.0                 // 移動速度
+        );
+
+        // --- 2. 鳴き声の再生 ---
+        // ウシやヒツジなど、各モブ固有の鳴き声（AmbientSound）を取得
+        // ※ Protected メソッドの場合は Access Transformer または Mixin / リフレクションが必要になる場合があります
+        SoundEvent sound = getAmbientSoundReflectively(mob);
+
+        if (sound != null) {
+            level.playSound(
+                    null,                       // 全プレイヤーに聞こえるようにnullを指定
+                    mob.getX(), mob.getY(), mob.getZ(),
+                    sound,
+                    SoundSource.NEUTRAL,        // サウンドカテゴリ
+                    1.5F,                       // 音量（少し大きめにして強調）
+                    mob.getVoicePitch() * 0.8F  // ピッチ（少し低くして威嚇感を出す）
+            );
+        }
+    }
+
+    private static SoundEvent getAmbientSoundReflectively(Mob mob) {
+        try {
+            // Mojang mapping (開発環境) の場合
+            Method method = Mob.class.getDeclaredMethod("getAmbientSound");
+            method.setAccessible(true);
+            return (SoundEvent) method.invoke(mob);
+        } catch (Exception e1) {
+            try {
+                // 難読化環境 (ビルド後 / obfuscated) の場合（バニラの中間名）
+                Method method = Mob.class.getDeclaredMethod("m_7515_");
+                method.setAccessible(true);
+                return (SoundEvent) method.invoke(mob);
+            } catch (Exception e2) {
+                return null;
             }
         }
     }
@@ -251,16 +315,16 @@ public class LivestockModify {
 
     private static double getSpeedModifier(Mob entity) {
         if (entity.is(EntityType.RABBIT)) {
-            return 2.2D;
+            return 3.0D;
         }
         if (entity.is(EntityType.COW) || entity.is(EntityType.MOOSHROOM)) {
-            return 2.0D;
+            return 2.4D;
         }
         if (entity.is(EntityType.CHICKEN)) {
-            return 1.4D;
+            return 1.7D;
         }
         if (entity.is(EntityType.SHEEP)) {
-            return 1.25D;
+            return 1.4D;
         }
         if (entity.is(EntityType.PIG)) {
             return 1.25D;

@@ -1,6 +1,5 @@
 package com.hiroto99.hardnight.register;
 
-import com.hiroto99.hardnight.ModTags;
 import com.hiroto99.hardnight.entity.FrozenZombie;
 import com.hiroto99.hardnight.entity.FrozenZombieHorse;
 import com.hiroto99.hardnight.entity.GhastRider;
@@ -12,7 +11,6 @@ import com.hiroto99.windowslib.core.autodatagen.generatortypes.LootType;
 import com.hiroto99.windowslib.instance.tagtype.TagTypeEntityType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Monster;
@@ -139,6 +137,29 @@ public final class ModEntities {
                             .build(ResourceKey.create(Registries.ENTITY_TYPE, id))    // ★ ResourceKey<EntityType<?>> をそのまま渡す
             );
 
+    @AutoLootTable(
+            name = "ghast_rider",
+            type = LootType.ENTITY,
+            pool={
+                    @LootTablePool(
+                            name = "normal_drops",
+                            rollsMin = 1,
+                            rollsMax = 1,
+                            dropItemData={
+                                    "minecraft:ghast_tear/1/0/1/1",
+                                    "minecraft:gunpowder/1/0/2/1"
+                            }
+                    ),
+                    @LootTablePool(
+                            name="harness",
+                            rollsMin=1,
+                            rollsMax=1,
+                            dropItemData={
+                                    "minecraft:white_harness/1/1/1/0/entity_properties/entity:attacking_player"
+                            }
+                    )
+            }
+    )
     public static final DeferredHolder<EntityType<?>, EntityType<GhastRider>> GHAST =
             ENTITY_TYPES.register("ghast_rider", id ->
                     EntityType.Builder.of(
@@ -154,7 +175,6 @@ public final class ModEntities {
                             .notInPeaceful()
                             .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
     );
-
 
     public static void init(IEventBus bus) {
         ENTITY_TYPES.register(bus);
