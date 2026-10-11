@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "hardnight:elite_skeleton",
     "hardnight:frozen_zombie_horse",
     "hardnight:frozen_zombie"
   ]

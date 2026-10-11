@@ -1,9 +1,6 @@
 package com.hiroto99.hardnight.register;
 
-import com.hiroto99.hardnight.entity.FrozenZombie;
-import com.hiroto99.hardnight.entity.FrozenZombieHorse;
-import com.hiroto99.hardnight.entity.GhastRider;
-import com.hiroto99.hardnight.entity.ZombieFishingHookEntity;
+import com.hiroto99.hardnight.entity.*;
 import com.hiroto99.windowslib.core.autodatagen.annotation.AutoLootTable;
 import com.hiroto99.windowslib.core.autodatagen.annotation.AutoTag;
 import com.hiroto99.windowslib.core.autodatagen.annotation.LootTablePool;
@@ -176,6 +173,21 @@ public final class ModEntities {
                             .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
     );
 
+    @AutoTag(tagtype = TagTypeEntityType.class, tagKeyPath = {"minecraft:skeletons", "minecraft:burn_in_daylight"})
+    public static final DeferredHolder<EntityType<?>, EntityType<EliteSkeleton>> ELITE_SKELETON =
+            ENTITY_TYPES.register("elite_skeleton", id ->
+                    EntityType.Builder.of(
+                                    EliteSkeleton::new,
+                                    MobCategory.MONSTER
+                            )
+                            .sized(0.6F, 1.99F)
+                            .eyeHeight(1.74F)
+                            .ridingOffset(-0.7F)
+                            .clientTrackingRange(8)
+                            .notInPeaceful()
+                            .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
+    );
+
     public static void init(IEventBus bus) {
         ENTITY_TYPES.register(bus);
     }
@@ -185,6 +197,7 @@ public final class ModEntities {
         event.put(FROZEN_ZOMBIE.get(), FrozenZombie.createAttributes().build());
         event.put(FROZEN_ZOMBIE_HORSE.get(), FrozenZombieHorse.createAttributes().build());
         event.put(GHAST.get(), Ghast.createAttributes().build());
+        event.put(ELITE_SKELETON.get(), EliteSkeleton.createAttributes().build());
     }
 
     @SubscribeEvent
@@ -192,5 +205,6 @@ public final class ModEntities {
         event.register(FROZEN_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
         event.register(FROZEN_ZOMBIE_HORSE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
         event.register(GHAST.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, GhastRider::checkGhastRiderSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
+        event.register(ELITE_SKELETON.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
     }
 }

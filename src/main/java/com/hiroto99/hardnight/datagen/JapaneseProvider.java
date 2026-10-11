@@ -1,6 +1,7 @@
 package com.hiroto99.hardnight.datagen;
 
 import com.hiroto99.hardnight.register.ModEntities;
+import com.hiroto99.hardnight.register.ModMobEffects;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -25,5 +26,7 @@ public class JapaneseProvider extends LanguageProvider {
         this.add(ModEntities.FROZEN_ZOMBIE.get(), "フローズンゾンビ");
         this.add(ModEntities.FROZEN_ZOMBIE_HORSE.get(), "フローズンゾンビホース");
         this.add(ModEntities.GHAST.get(), "ガスト");
+        this.add(ModEntities.ELITE_SKELETON.get(), "スケルトン");
+        this.add(ModMobEffects.FREEZING.value(), "凍結");
     }
 }

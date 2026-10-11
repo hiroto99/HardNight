@@ -1,10 +1,15 @@
 package com.hiroto99.hardnight.modify;
 
 import com.hiroto99.hardnight.ai.HitAndAwayGoal;
+import com.hiroto99.hardnight.register.ModEntities;
 import com.hiroto99.windowslib.ref.EntityRef;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -16,7 +21,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.npc.villager.VillagerType;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -76,6 +84,29 @@ public class LivestockModify {
         public static void onEntityJoin(EntityJoinLevelEvent event) {
             if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Mob mob) || !shouldApplyThisModify(mob)) {
                 return;
+            }
+            if (mob instanceof Chicken chicken && chicken.getFirstPassenger() != null) {
+                if (chicken.getFirstPassenger().is(EntityType.ZOMBIE) || chicken.getFirstPassenger().is(EntityType.DROWNED)) {
+                    applyVariant(chicken, Identifier.withDefaultNamespace("temperate"));
+                }
+                if (chicken.getFirstPassenger().is(EntityType.ZOMBIFIED_PIGLIN) || chicken.getFirstPassenger().is(EntityType.HUSK)) {
+                    applyVariant(chicken, Identifier.withDefaultNamespace("warm"));
+                }
+                if (chicken.getFirstPassenger().is(ModEntities.FROZEN_ZOMBIE)) {
+                    applyVariant(chicken, Identifier.withDefaultNamespace("cold"));
+                }
+                if (chicken.getFirstPassenger() instanceof ZombieVillager zombieVillager) {
+                    Holder<VillagerType> villagerTypeHolder = getZombieVillagerBiomeType(zombieVillager);
+                    if (villagerTypeHolder.is(getZombieVillagerType("desert")) || villagerTypeHolder.is(getZombieVillagerType("jungle")) || villagerTypeHolder.is(getZombieVillagerType("savanna"))) {
+                        applyVariant(chicken, Identifier.withDefaultNamespace("warm"));
+                    }
+                    if (villagerTypeHolder.is(getZombieVillagerType("plains")) || villagerTypeHolder.is(getZombieVillagerType("swamp"))) {
+                        applyVariant(chicken, Identifier.withDefaultNamespace("temperate"));
+                    }
+                    if (villagerTypeHolder.is(getZombieVillagerType("snow")) || villagerTypeHolder.is(getZombieVillagerType("taiga"))) {
+                        applyVariant(chicken, Identifier.withDefaultNamespace("cold"));
+                    }
+                }
             }
 
             if (mob instanceof PathfinderMob pathfinderMob) {
@@ -147,7 +178,7 @@ public class LivestockModify {
             if (!(event.getEntity().level() instanceof ServerLevel serverLevel) || !(event.getEntity() instanceof Mob victim) || !shouldApplyThisModify(victim)) {
                 return;
             }
-            if (victim.getHealth() <= event.getHealthDamage()) {
+            if (victim.getHealth() <= 0) {
                 return;
             }
 
@@ -250,8 +281,8 @@ public class LivestockModify {
                 ParticleTypes.ANGRY_VILLAGER,
                 x, y, z,
                 5,                  // パーティクルの個数
-                0.3, 0.2, 0.3,      // 発生範囲のブレ（幅）
-                0.0                 // 移動速度
+                0.3, 0.2, 0.3, // 発生範囲のブレ（幅）
+                0.0                       // 移動速度
         );
 
         // --- 2. 鳴き声の再生 ---
@@ -261,7 +292,7 @@ public class LivestockModify {
 
         if (sound != null) {
             level.playSound(
-                    null,                       // 全プレイヤーに聞こえるようにnullを指定
+                    null,                // 全プレイヤーに聞こえるようにnullを指定
                     mob.getX(), mob.getY(), mob.getZ(),
                     sound,
                     SoundSource.NEUTRAL,        // サウンドカテゴリ
@@ -330,5 +361,22 @@ public class LivestockModify {
             return 1.25D;
         }
         return 0.0D;
+    }
+
+    public static void applyVariant(Chicken chicken, Identifier variantLocation) {
+        // Registries.CHICKEN_VARIANT レジストリから Holder を検索してセット
+        chicken.level().registryAccess()
+                .lookup(Registries.CHICKEN_VARIANT)
+                .flatMap(registry -> registry.get(ResourceKey.create(Registries.CHICKEN_VARIANT, variantLocation)))
+                .ifPresent(chicken::setVariant);
+    }
+
+    public static Holder<VillagerType> getZombieVillagerBiomeType(ZombieVillager zombieVillager) {
+        // 村人ゾンビの VillagerData から type (Holder<VillagerType>) を取得
+        return zombieVillager.getVillagerData().type();
+    }
+
+    public static ResourceKey<VillagerType> getZombieVillagerType(String namespace) {
+        return ResourceKey.create(Registries.VILLAGER_TYPE, Identifier.withDefaultNamespace(namespace));
     }
 }

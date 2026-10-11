@@ -1,6 +1,7 @@
 package com.hiroto99.hardnight.datagen;
 
 import com.hiroto99.hardnight.register.ModEntities;
+import com.hiroto99.hardnight.register.ModMobEffects;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -25,6 +26,8 @@ public class ModLanguageProvider extends LanguageProvider {
         this.add(ModEntities.FROZEN_ZOMBIE.get(), "Frozen Zombie");
         this.add(ModEntities.FROZEN_ZOMBIE_HORSE.get(), "Frozen Zombie Horse");
         this.add(ModEntities.GHAST.get(), "Ghast");
+        this.add(ModEntities.ELITE_SKELETON.get(), "Skeleton");
+        this.add(ModMobEffects.FREEZING.value(), "Freezing");
     }
 }
 
