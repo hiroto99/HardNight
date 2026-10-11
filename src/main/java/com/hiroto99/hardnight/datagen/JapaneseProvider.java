@@ -26,7 +26,7 @@ public class JapaneseProvider extends LanguageProvider {
         this.add(ModEntities.FROZEN_ZOMBIE.get(), "フローズンゾンビ");
         this.add(ModEntities.FROZEN_ZOMBIE_HORSE.get(), "フローズンゾンビホース");
         this.add(ModEntities.GHAST.get(), "ガスト");
-        this.add(ModEntities.ELITE_SKELETON.get(), "スケルトン");
+        this.add(ModEntities.ELITE_SKELETON.get(), "エリートスケルトン");
         this.add(ModMobEffects.FREEZING.value(), "凍結");
     }
 }

@@ -218,9 +218,8 @@ public class EliteSkeletonAI {
 
     private static List<AbstractSkeleton> getVisibleSkeletons(EliteSkeleton body) {
         List<AbstractSkeleton> skeletons = body.level().getEntitiesOfClass(
-                LivingEntity.class, body.getBoundingBox().deflate(64)
-        ).stream().filter(entity -> entity instanceof AbstractSkeleton)
-                .map(entity -> (AbstractSkeleton) entity).toList();
+                AbstractSkeleton.class, body.getBoundingBox().deflate(48)
+        );
         return skeletons;
     }
 

@@ -43,10 +43,6 @@ public class EliteSkeleton extends Skeleton implements HoldingShieldMobBase {
         // バニラ Skeleton の AI Goal を完全に無効化
     }
 
-    public static AttributeSupplier.Builder createAttributes() {
-        return AbstractSkeleton.createMonsterAttributes();
-    }
-
     protected Brain.Provider<EliteSkeleton> createBrainProvider() {
         return Brain.provider(
                 List.of(

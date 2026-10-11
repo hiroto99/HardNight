@@ -26,7 +26,7 @@ public class ModLanguageProvider extends LanguageProvider {
         this.add(ModEntities.FROZEN_ZOMBIE.get(), "Frozen Zombie");
         this.add(ModEntities.FROZEN_ZOMBIE_HORSE.get(), "Frozen Zombie Horse");
         this.add(ModEntities.GHAST.get(), "Ghast");
-        this.add(ModEntities.ELITE_SKELETON.get(), "Skeleton");
+        this.add(ModEntities.ELITE_SKELETON.get(), "Elite Skeleton");
         this.add(ModMobEffects.FREEZING.value(), "Freezing");
     }
 }
