@@ -49,7 +49,7 @@ public class KitingRangedAttack extends Behavior<EliteSkeleton> {
         } else if (distanceSqr > maxDistanceSqr) {
             entity.getBrain().setMemory(
                     MemoryModuleType.WALK_TARGET,
-                    new WalkTarget(target, 1.0F, (int) minDistance)
+                    new WalkTarget(target, 2.0F, (int) minDistance)
             );
         } else {
             entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);

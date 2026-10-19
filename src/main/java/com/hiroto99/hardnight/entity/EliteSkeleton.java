@@ -1,8 +1,13 @@
 package com.hiroto99.hardnight.entity;
 
 import com.hiroto99.hardnight.register.ModBrains;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
@@ -29,6 +34,10 @@ import java.util.List;
 public class EliteSkeleton extends Skeleton implements HoldingShieldMobBase {
     private String eliteBowPath = "inventory_bow";
     private String eliteSwordPath = "inventory_sword";
+
+    // データウォッチャー用の定義
+    private static final EntityDataAccessor<Boolean> DATA_CANT_USE_SHIELD =
+            SynchedEntityData.defineId(EliteSkeleton.class, EntityDataSerializers.BOOLEAN);
 
     // 保持用の ItemStack フィールド
     private ItemStack eliteBow = new ItemStack(Items.BOW);
@@ -106,23 +115,44 @@ public class EliteSkeleton extends Skeleton implements HoldingShieldMobBase {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        boolean wasHurt = super.hurtServer(level, source, damage);
-        if (wasHurt) {
-            if (this.getBrain().hasMemoryValue(ModBrains.ELITE_SKELETON_IS_COMBAT_MODE.get()) && !this.getBrain().hasMemoryValue(ModBrains.SHIELD_DISABLED_COOLDOWN.get())) {
-                if (canDisableShield(source)) {
-                    this.getBrain().setMemory(ModBrains.SHIELD_DISABLED_COOLDOWN.get(), 100);
-                }
-                if (!canBlockable(source) && source.getEntity() instanceof LivingEntity sourceEntity) {
-                    EliteSkeletonAI.wasHurtBy(level, this, sourceEntity);
-                } else {
-                    return false;
-                }
-            } else {
+        // 1. 現在近接（盾構え）モードかつ、盾クラッシュのクールダウン中でないか確認
+        boolean isBlockingMode = this.getBrain().hasMemoryValue(ModBrains.ELITE_SKELETON_IS_COMBAT_MODE.get())
+                && !this.getBrain().hasMemoryValue(ModBrains.SHIELD_DISABLED_COOLDOWN.get());
+
+        if (isBlockingMode) {
+            // 2. 盾を無効化する攻撃（ウォーデンの近接、斧攻撃、クリエイティブ等）を受けた場合
+            if (canDisableShield(source)) {
+                // 盾を破壊（クールダウン 100 ティック ＝ 5秒）
+                this.getBrain().setMemory(ModBrains.SHIELD_DISABLED_COOLDOWN.get(), 100);
+
+                // 盾破壊音（盾が無効化されたサウンド）を再生
+                level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.SHIELD_BREAK.value(),
+                        SoundSource.HOSTILE, 0.8F, 0.8F + level.getRandom().nextFloat() * 0.4F);
+
+                return false;
+            }
+            // 3. 盾で防御可能な攻撃の場合（盾破壊攻撃ではない通常攻撃）
+            else if (canBlockable(source)) {
+                // ガード成功音を再生
+                level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.SHIELD_BLOCK.value(),
+                        SoundSource.HOSTILE, 1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F);
+
+                // ガード成功時はターゲット指定・反撃リンクのみ呼び出して、ダメージ処理（super.hurtServer）を行わずに終了する（ダメージ軽減/無効化）
                 if (source.getEntity() instanceof LivingEntity sourceEntity) {
                     EliteSkeletonAI.wasHurtBy(level, this, sourceEntity);
                 }
+                return false; // ダメージを完全にガード
             }
         }
+
+        // 4. ガードできない攻撃、または盾破砕中/遠距離モード時の通常のダメージ処理
+        boolean wasHurt = super.hurtServer(level, source, damage);
+        if (wasHurt && source.getEntity() instanceof LivingEntity sourceEntity) {
+            EliteSkeletonAI.wasHurtBy(level, this, sourceEntity);
+        }
+
         return wasHurt;
     }
 
@@ -200,6 +230,35 @@ public class EliteSkeleton extends Skeleton implements HoldingShieldMobBase {
     @Override
     protected SoundEvent getDeathSound() {
         return super.getDeathSound();
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_CANT_USE_SHIELD, false);
+    }
+
+    // クーダウン管理などの処理で、値が変わったときに同期する
+    public void setCantUseShield(boolean cantUse) {
+        this.entityData.set(DATA_CANT_USE_SHIELD, cantUse);
+    }
+
+    public boolean isCantUseShield() {
+        return this.entityData.get(DATA_CANT_USE_SHIELD);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.getBrain().hasMemoryValue(ModBrains.SHIELD_DISABLED_COOLDOWN.get())) {
+            if (!isCantUseShield()) {
+                setCantUseShield(true);
+            }
+        } else {
+            if (isCantUseShield()) {
+                setCantUseShield(false);
+            }
+        }
     }
 
     @Override

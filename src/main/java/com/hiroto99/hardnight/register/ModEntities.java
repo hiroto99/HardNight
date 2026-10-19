@@ -1,11 +1,13 @@
 package com.hiroto99.hardnight.register;
 
+import com.hiroto99.hardnight.client.model.ModModelLayers;
 import com.hiroto99.hardnight.entity.*;
 import com.hiroto99.windowslib.core.autodatagen.annotation.AutoLootTable;
 import com.hiroto99.windowslib.core.autodatagen.annotation.AutoTag;
 import com.hiroto99.windowslib.core.autodatagen.annotation.LootTablePool;
 import com.hiroto99.windowslib.core.autodatagen.generatortypes.LootType;
 import com.hiroto99.windowslib.instance.tagtype.TagTypeEntityType;
+import net.minecraft.client.model.monster.skeleton.SkeletonModel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.*;
@@ -14,6 +16,8 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -21,6 +25,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import static com.hiroto99.hardnight.HardNight.MODID;
 
+@EventBusSubscriber
 public final class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
@@ -206,5 +211,11 @@ public final class ModEntities {
         event.register(FROZEN_ZOMBIE_HORSE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
         event.register(GHAST.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, GhastRider::checkGhastRiderSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
         event.register(ELITE_SKELETON.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.AND);
+    }
+
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // ★ここで「hardnight:elite_skeleton」の「main」レイヤーを実体として登録する
+        event.registerLayerDefinition(ModModelLayers.ELITE_SKELETON, SkeletonModel::createBodyLayer);
     }
 }

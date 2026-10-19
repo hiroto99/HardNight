@@ -1,17 +1,17 @@
 package com.hiroto99.hardnight;
 
+import com.hiroto99.hardnight.client.renderer.EliteSkeletonRenderer;
 import com.hiroto99.hardnight.datagen.JapaneseProvider;
 import com.hiroto99.hardnight.datagen.ModLanguageProvider;
 import com.hiroto99.hardnight.register.ModBrains;
 import com.hiroto99.hardnight.register.ModEntities;
 import com.hiroto99.hardnight.register.ModMobEffects;
-import com.hiroto99.hardnight.renderer.FrozenZombieHorseRenderer;
-import com.hiroto99.hardnight.renderer.FrozenZombieRenderer;
-import com.hiroto99.hardnight.renderer.ZombieFishingHookRenderer;
+import com.hiroto99.hardnight.client.renderer.FrozenZombieHorseRenderer;
+import com.hiroto99.hardnight.client.renderer.FrozenZombieRenderer;
+import com.hiroto99.hardnight.client.renderer.ZombieFishingHookRenderer;
 import com.hiroto99.windowslib.datagen.AutoDataGenProvider;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.GhastRenderer;
-import net.minecraft.client.renderer.entity.SkeletonRenderer;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -51,9 +51,6 @@ public class HardNight {
 		// ★ NoopRenderer 登録（描画しない）
 		modEventBus.addListener(this::registerRenderers);
 
-		modEventBus.addListener(ModEntities::createAttributes);
-		modEventBus.addListener(ModEntities::registerSpawnPlacements);
-
 		modEventBus.addListener(this::gatherData);
 	}
 
@@ -86,7 +83,7 @@ public class HardNight {
 		);
 		event.registerEntityRenderer(
 				ModEntities.ELITE_SKELETON.get(),
-				SkeletonRenderer::new
+				EliteSkeletonRenderer::new
 		);
 	}
 

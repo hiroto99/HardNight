@@ -1,4 +1,4 @@
-package com.hiroto99.hardnight.renderer;
+package com.hiroto99.hardnight.client.renderer;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ZombieRenderer;

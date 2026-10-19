@@ -1,7 +1,6 @@
-package com.hiroto99.hardnight.renderer;
+package com.hiroto99.hardnight.client.renderer;
 
 import com.hiroto99.hardnight.entity.FrozenZombieHorse;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.animal.equine.AbstractEquineModel;
 import net.minecraft.client.model.animal.equine.BabyHorseModel;
 import net.minecraft.client.model.animal.equine.EquineSaddleModel;
@@ -10,14 +9,10 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.UndeadHorseRenderer;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import static com.hiroto99.hardnight.HardNight.MODID;
 

@@ -1,5 +1,6 @@
-package com.hiroto99.hardnight.renderer;
+package com.hiroto99.hardnight.client.renderer;
 
+import com.hiroto99.hardnight.client.state.ZombieFishingHookRenderState;
 import com.hiroto99.hardnight.entity.ZombieFishingHookEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

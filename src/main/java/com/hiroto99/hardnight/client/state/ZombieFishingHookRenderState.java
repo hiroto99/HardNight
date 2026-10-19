@@ -1,4 +1,4 @@
-package com.hiroto99.hardnight.renderer;
+package com.hiroto99.hardnight.client.state;
 
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.phys.Vec3;
